@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Official Certified Results - Kampala University{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2">OFFICIAL RESULTS PORTAL</span>
+        <h2 class="fw-bold text-dark mb-2">Kampala University Certified Election Results</h2>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Certified returns released under the authority of the Kampala University Electoral Commission following post-election audits and verification.
+        </p>
+    </div>
+
+    {% if elections %}
+        <div class="row g-4 justify-content-center">
+            {% for el in elections %}
+                <div class="col-lg-8">
+                    <div class="card card-ku border-start border-4 border-warning">
+                        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                            <div>
+                                <span class="badge badge-published mb-2">
+                                    <i class="bi bi-patch-check-fill me-1 text-warning"></i> RESULTS CERTIFIED & PUBLISHED
+                                </span>
+                                <h4 class="fw-bold text-dark mb-1">{{ el.title }}</h4>
+                                <div class="text-muted small mb-2">Academic Year {{ el.academic_year }} &bull; Closed on {{ el.end_time.strftime('%d %b %Y') }}</div>
+                                {% if el.results_approved_at %}
+                                    <div class="small text-success">
+                                        <i class="bi bi-shield-check me-1"></i> Certified by Electoral Commission on {{ el.results_approved_at.strftime('%d %b %Y at %H:%M UTC') }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <a href="{{ url_for('results.view_public_results', election_id=el.id) }}" class="btn btn-ku-primary text-nowrap">
+                                    <i class="bi bi-bar-chart-line me-1"></i> View Tallies & Charts
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="col-lg-8 mx-auto">
+            <div class="alert alert-light border py-5 text-center shadow-sm">
+                <i class="bi bi-hourglass-split fs-1 text-warning d-block mb-3"></i>
+                <h5 class="fw-bold">No Election Results Have Been Published Yet</h5>
+                <p class="text-muted small mb-0">
+                    Results will appear here once the active voting window concludes and the Electoral Commission completes the official certification process.
+                </p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

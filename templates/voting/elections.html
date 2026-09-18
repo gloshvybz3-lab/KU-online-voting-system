@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}My Ballot & Elections - Kampala University{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Student Header Banner -->
+    <div class="card card-ku mb-4 border-0 bg-white">
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-primary px-3 py-1 mb-2">VERIFIED VOTER</span>
+                <h3 class="fw-bold text-dark mb-1">{{ student.full_name }}</h3>
+                <div class="text-muted small d-flex flex-wrap gap-3">
+                    <span><i class="bi bi-card-heading text-primary me-1"></i> ID: <strong>{{ student.student_id }}</strong></span>
+                    <span><i class="bi bi-geo-alt text-danger me-1"></i> Campus: <strong>{{ student.campus }}</strong></span>
+                    <span><i class="bi bi-building text-warning me-1"></i> Faculty: <strong>{{ student.faculty }}</strong></span>
+                    <span><i class="bi bi-book text-success me-1"></i> Course: <strong>{{ student.course }}</strong> (Yr {{ student.year_of_study }})</span>
+                </div>
+            </div>
+            <div class="text-md-end">
+                <span class="text-muted small d-block">Eligibility Profile</span>
+                <span class="badge bg-success bg-opacity-10 text-success fs-6 px-3 py-2 border border-success">
+                    <i class="bi bi-check-all me-1"></i> Qualified for Campus & Faculty Ballots
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active and Open Elections Section -->
+    <h4 class="fw-bold text-dark mb-3">Available Student Elections</h4>
+
+    {% if elections %}
+        <div class="row g-4">
+            {% for item in elections %}
+                {% set el = item.election %}
+                <div class="col-lg-6">
+                    <div class="card card-ku h-100 {% if item.has_voted %}border-success{% elif item.can_vote %}border-primary{% endif %}">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                {% if item.has_voted %}
+                                    <span class="badge bg-success text-white px-3 py-2 rounded-pill">
+                                        <i class="bi bi-check-circle-fill me-1"></i> BALLOT CAST
+                                    </span>
+                                {% elif item.can_vote %}
+                                    <span class="badge badge-active px-3 py-2 rounded-pill">
+                                        <i class="bi bi-broadcast me-1"></i> OPEN & ELIGIBLE
+                                    </span>
+                                {% elif item.effective_status == 'scheduled' %}
+                                    <span class="badge badge-scheduled px-3 py-2 rounded-pill">
+                                        <i class="bi bi-clock me-1"></i> SCHEDULED
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-closed px-3 py-2 rounded-pill">
+                                        <i class="bi bi-lock me-1"></i> CLOSED
+                                    </span>
+                                {% endif %}
+                                <span class="text-muted small fw-semibold">AY {{ el.academic_year }}</span>
+                            </div>
+
+                            <h4 class="fw-bold text-dark mt-2 mb-2">{{ el.title }}</h4>
+                            <p class="text-muted small mb-3">{{ el.description or 'Official Kampala University election.' }}</p>
+
+                            <div class="bg-light p-3 rounded-3 mb-3 small">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <span class="text-muted d-block">Your Eligible Positions:</span>
+                                        <span class="fw-bold text-dark fs-6">{{ item.eligible_positions_count }} position(s)</span>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <span class="text-muted d-block">Poll Closes:</span>
+                                        <span class="fw-semibold text-dark">{{ el.end_time.strftime('%d %b %Y, %H:%M') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if item.has_voted %}
+                                <div class="alert alert-success py-2 px-3 small d-flex justify-content-between align-items-center mb-3">
+                                    <span><i class="bi bi-shield-check me-1"></i> Your vote has been safely recorded.</span>
+                                    {% if item.receipt_token %}
+                                        <a href="{{ url_for('voting.vote_confirmation', election_id=el.id, token=item.receipt_token) }}" class="btn btn-sm btn-outline-success">
+                                            View Receipt
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <button class="btn btn-secondary w-100 py-2 disabled" disabled>
+                                    <i class="bi bi-check2-circle me-1"></i> You Have Voted (Double-Vote Lock Active)
+                                </button>
+                            {% elif item.can_vote %}
+                                <a href="{{ url_for('voting.show_ballot', election_id=el.id) }}" class="btn btn-ku-primary w-100 py-2 fs-6">
+                                    <i class="bi bi-check2-square me-2"></i> Enter Voting Booth
+                                </a>
+                            {% elif item.effective_status == 'scheduled' %}
+                                <div class="text-center py-2 text-muted small">
+                                    <i class="bi bi-info-circle me-1"></i> Voting will open on {{ el.start_time.strftime('%d %b %Y at %H:%M UTC') }}.
+                                </div>
+                            {% else %}
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-light border text-muted w-100" disabled>Polls Closed</button>
+                                    {% if el.status == 'results_published' %}
+                                        <a href="{{ url_for('results.view_public_results', election_id=el.id) }}" class="btn btn-outline-primary">
+                                            View Results
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info py-4 text-center">
+            <h5>No elections currently available</h5>
+            <p class="text-muted mb-0">Please check back soon or follow university notices.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,315 @@
+/* Kampala University Online Voting System - Custom Theme */
+:root {
+  --ku-navy: #0a3d2e;
+  --ku-navy-dark: #061f18;
+  --ku-navy-light: #145c43;
+  --ku-gold: #18e63a;
+  --ku-gold-dark: #09d145;
+  --ku-gold-light: #ffe5b4;
+  --ku-bg-light: #f0faf6;
+  --ku-card-border: #c8e6d8;
+  --ku-success: #10b981;
+  --ku-danger: #ef4444;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background-color: var(--ku-bg-light);
+  color: #1e293b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('../images/Logo.PNG');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 500px 500px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: multiply;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+main {
+  flex: 1 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure navbar sits above watermark */
+.navbar-ku {
+  position: relative;
+  z-index: 1030;
+  background: linear-gradient(135deg, var(--ku-navy-dark) 0%, var(--ku-navy) 100%);
+  border-bottom: 3px solid var(--ku-gold);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand-ku {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-badge {
+  background-color: var(--ku-gold);
+  color: var(--ku-navy-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.nav-link {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88) !important;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--ku-gold) !important;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, var(--ku-navy) 0%, var(--ku-navy-light) 100%);
+  color: white;
+  padding: 50px 0 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: radial-gradient(circle at top right, rgba(245, 166, 35, 0.15), transparent 60%);
+  pointer-events: none;
+}
+
+/* Cards */
+.card-ku {
+  border: 1px solid var(--ku-card-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #ffffff;
+}
+
+.card-ku:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+.card-header-ku {
+  background-color: #ffffff;
+  border-bottom: 2px solid #f1f5f9;
+  padding: 16px 20px;
+  font-weight: 700;
+}
+
+/* Candidate Card in Ballot */
+.candidate-ballot-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  background: #ffffff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.candidate-ballot-card:hover {
+  border-color: var(--ku-navy-light);
+  box-shadow: 0 4px 12px rgba(13, 49, 97, 0.12);
+}
+
+.candidate-ballot-card.selected {
+  border-color: var(--ku-gold-dark);
+  background-color: #fffdf7;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.3);
+}
+
+.candidate-photo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--ku-gold);
+  margin: 0 auto 12px;
+  background-color: #e2e8f0;
+}
+
+.candidate-symbol {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 2px;
+  background: white;
+}
+
+/* Status Badges */
+.badge-active {
+  background-color: #dcfce7;
+  color: #15803d;
+  font-weight: 600;
+}
+
+.badge-scheduled {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.badge-closed {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+}
+
+.badge-published {
+  background-color: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* Buttons */
+.btn-ku-primary {
+  background-color: var(--ku-navy);
+  color: white;
+  font-weight: 600;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-ku-primary:hover {
+  background-color: var(--ku-navy-light);
+  color: white;
+  box-shadow: 0 4px 10px rgba(9, 35, 71, 0.25);
+}
+
+.btn-ku-gold {
+  background-color: var(--ku-gold);
+  color: var(--ku-navy-dark);
+  font-weight: 700;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-ku-gold:hover {
+  background-color: var(--ku-gold-dark);
+  color: white;
+  box-shadow: 0 4px 10px rgba(28, 202, 28, 0.35);
+}
+
+/* Voting Receipt Card */
+.receipt-box {
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 28px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.receipt-token {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--ku-navy);
+  background-color: #f1f5f9;
+  padding: 10px 18px;
+  border-radius: 8px;
+  display: inline-block;
+  user-select: all;
+}
+
+/* Countdown Timer Badge */
+.countdown-box {
+  display: inline-flex;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.countdown-unit {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 8px;
+  border-radius: 6px;
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Footer */
+.footer-ku {
+  background-color: var(--ku-navy-dark);
+  color: #94a3b8;
+  padding: 36px 0 20px;
+  border-top: 3px solid var(--ku-gold);
+  margin-top: auto;
+}
+
+.footer-ku a {
+  color: #cbd5e1;
+  text-decoration: none;
+}
+
+.footer-ku a:hover {
+  color: var(--ku-gold);
+}
+
+/* KU Logo Images */
+.ku-navbar-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
+}
+
+.ku-footer-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.ku-hero-logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+  display: block;
+  margin: 0 auto 12px;
+}
+
+.ku-login-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}

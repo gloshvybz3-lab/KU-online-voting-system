@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Electoral Commission Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Admin Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <span class="badge bg-warning text-dark fw-bold mb-1">CONTROL COCKPIT</span>
+            <h2 class="fw-bold text-dark mb-0">Electoral Commission Administration</h2>
+            <p class="text-muted small mb-0">Logged in as <strong>{{ current_user.full_name }}</strong> &bull; Role: <span class="badge bg-secondary">{{ current_user.role }}</span></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.elections') }}" class="btn btn-ku-primary">
+                <i class="bi bi-calendar-plus me-1"></i> New Election
+            </a>
+            <a href="{{ url_for('admin.candidates') }}" class="btn btn-outline-dark">
+                <i class="bi bi-person-plus me-1"></i> Add Candidate
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-2">
+            <div class="card card-ku p-3 text-center">
+                <div class="text-muted small">Registered Voters</div>
+                <div class="fs-3 fw-bold text-primary">{{ total_students }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Verified students</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="card card-ku p-3 text-center">
+                <div class="text-muted small">Registrar Records</div>
+                <div class="fs-3 fw-bold text-dark">{{ total_uni_records }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Authoritative roster</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="card card-ku p-3 text-center">
+                <div class="text-muted small">Active Elections</div>
+                <div class="fs-3 fw-bold text-success">{{ active_elections }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Polls open now</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="card card-ku p-3 text-center">
+                <div class="text-muted small">Total Candidates</div>
+                <div class="fs-3 fw-bold text-info">{{ total_candidates }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Across all positions</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="card card-ku p-3 text-center">
+                <div class="text-muted small">Votes Recorded</div>
+                <div class="fs-3 fw-bold text-warning">{{ total_participations }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Ballots cast</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="card card-ku p-3 text-center">
+                <div class="text-muted small">Overall Turnout</div>
+                <div class="fs-3 fw-bold text-success">
+                    {{ ((total_participations / total_students * 100)|round(1)) if total_students > 0 else 0 }}%
+                </div>
+                <div class="text-muted" style="font-size: 0.75rem;">Of registered voters</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Elections & Quick Tally -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card card-ku h-100">
+                <div class="card-header card-header-ku d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-dark"><i class="bi bi-calendar-week text-primary me-2"></i> Recent Elections</span>
+                    <a href="{{ url_for('admin.elections') }}" class="btn btn-sm btn-outline-primary">Manage All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Election Title</th>
+                                    <th>Schedule Window</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for el in elections %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ el.title }}</strong><br>
+                                            <small class="text-muted">AY {{ el.academic_year }} &bull; {{ el.positions|length }} positions</small>
+                                        </td>
+                                        <td class="small">
+                                            <div>{{ el.start_time.strftime('%d %b %H:%M') }}</div>
+                                            <div class="text-muted">to {{ el.end_time.strftime('%d %b %H:%M') }}</div>
+                                        </td>
+                                        <td>
+                                            {% if el.status == 'active' %}
+                                                <span class="badge badge-active">Active</span>
+                                            {% elif el.status == 'results_published' %}
+                                                <span class="badge badge-published">Published</span>
+                                            {% elif el.status == 'scheduled' %}
+                                                <span class="badge badge-scheduled">Scheduled</span>
+                                            {% else %}
+                                                <span class="badge badge-closed">{{ el.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('admin.election_detail', election_id=el.id) }}" class="btn btn-outline-secondary" title="Configure">
+                                                    <i class="bi bi-gear"></i>
+                                                </a>
+                                                <a href="{{ url_for('results.view_admin_results', election_id=el.id) }}" class="btn btn-outline-primary" title="Live Tabulation">
+                                                    <i class="bi bi-bar-chart-line"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">No elections created yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Administration Links & Integrity Alert -->
+        <div class="col-lg-5">
+            <div class="card card-ku mb-4">
+                <div class="card-header card-header-ku fw-bold text-dark">
+                    <i class="bi bi-shield-check text-success me-2"></i> Electoral Integrity Status
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-2 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-check-circle-fill text-success me-2"></i>Ballot Secrecy Architecture</span>
+                            <span class="badge bg-success">Enforced</span>
+                        </li>
+                        <li class="mb-2 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-check-circle-fill text-success me-2"></i>Double-Vote Prevention Lock</span>
+                            <span class="badge bg-success">Active</span>
+                        </li>
+                        <li class="mb-2 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-check-circle-fill text-success me-2"></i>Registrar Verification Gate</span>
+                            <span class="badge bg-success">Active</span>
+                        </li>
+                        <li class="d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-check-circle-fill text-success me-2"></i>Real-time Tabulation Stream</span>
+                            <span class="badge bg-info text-dark">Ready</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card card-ku">
+                <div class="card-header card-header-ku fw-bold text-dark">
+                    <i class="bi bi-lightning-charge text-warning me-2"></i> Quick Administrative Shortcuts
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a href="{{ url_for('admin.students') }}" class="btn btn-outline-primary text-start">
+                        <i class="bi bi-people me-2"></i> Browse Student Voter Registry
+                    </a>
+                    <a href="{{ url_for('admin.candidates') }}" class="btn btn-outline-primary text-start">
+                        <i class="bi bi-person-badge me-2"></i> Screen & Approve Candidates
+                    </a>
+                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-primary text-start">
+                        <i class="bi bi-journal-text me-2"></i> Inspect Security Audit Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Audit Logs Preview -->
+    <div class="card card-ku">
+        <div class="card-header card-header-ku d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark"><i class="bi bi-journal-code text-secondary me-2"></i> Immutable Security Audit Trail (Recent Actions)</span>
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-secondary">View Full Log</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Timestamp (UTC)</th>
+                            <th>Actor</th>
+                            <th>User Identifier</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_logs %}
+                            <tr>
+                                <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    <span class="badge {% if log.user_type == 'admin' %}bg-dark{% elif log.user_type == 'student' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        {{ log.user_type|upper }}
+                                    </span>
+                                </td>
+                                <td><code>{{ log.user_identifier }}</code></td>
+                                <td class="fw-bold">{{ log.action }}</td>
+                                <td class="text-muted">{{ log.details or '-' }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">No audit events logged yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Voter Verification & Registration{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card card-ku shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="rounded-circle bg-warning bg-opacity-10 text-warning mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-person-check-fill fs-2 text-warning"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark">Student Voter Registration</h3>
+                        <p class="text-muted small">
+                            Self-registration requires verification against the official Kampala University Academic Registrar database.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info py-2 small d-flex align-items-center mb-4">
+                        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                        <div>Please enter your official <strong>Student ID</strong> and <strong>Registration Number</strong> exactly as issued on your KU Admission Letter / ID card.</div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('auth.student_register') }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Official Student ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-card-heading"></i></span>
+                                <input type="text" name="student_id" class="form-control" placeholder="e.g. KU/2024/001" value="{{ student_id or '' }}" required autofocus>
+                            </div>
+                            <div class="form-text">As found on your Student Identity Card.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">University Registration Number (Reg No)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-journal-bookmark"></i></span>
+                                <input type="text" name="reg_no" class="form-control" placeholder="e.g. 24/KU/001/UG" value="{{ reg_no or '' }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Create Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
+                                    <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Confirm Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                    <input type="password" name="confirm_password" class="form-control" placeholder="Re-type password" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4 small text-muted">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I confirm that I am a bonafide student of Kampala University and agree to adhere to the Electoral Commission code of conduct.
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-ku-primary w-100 py-2 fs-6 mb-3">
+                            <i class="bi bi-shield-check me-2"></i> Verify with University Records & Register
+                        </button>
+
+                        <div class="text-center small text-muted">
+                            Already registered your voting profile?
+                            <a href="{{ url_for('auth.student_login') }}" class="text-primary fw-semibold">Log In Here</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

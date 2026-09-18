@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Student Login - Electoral Commission{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card card-ku shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='images/ku_logo_transparent.png') }}" alt="Kampala University Logo" class="ku-login-logo mb-3">
+                        <h3 class="fw-bold text-dark">Student Voter Login</h3>
+                        <p class="text-muted small">Enter your Kampala University Student ID or official email to access your electronic ballot.</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('auth.student_login', next=request.args.get('next')) }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Student ID or University Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-card-heading"></i></span>
+                                <input type="text" name="identifier" class="form-control" placeholder="e.g. KU/2024/001 or student@ku.ac.ug" value="{{ identifier or '' }}" required autofocus>
+                            </div>
+                            <div class="form-text">Case-insensitive. Use the ID format registered with the academic registrar.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label fw-semibold mb-0">Password</label>
+                            </div>
+                            <div class="input-group mt-1">
+                                <span class="input-group-text bg-light"><i class="bi bi-key-fill"></i></span>
+                                <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" name="remember" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label small text-muted" for="rememberMe">Remember my login session on this device</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-ku-primary w-100 py-2 fs-6 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Log In to Vote
+                        </button>
+
+                        <div class="text-center small text-muted">
+                            Haven't registered your voter profile yet?
+                            <a href="{{ url_for('auth.student_register') }}" class="text-primary fw-semibold">Verify & Register Here</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light border-0 py-3 text-center small text-muted">
+                    <i class="bi bi-shield-shaded text-success me-1"></i> Secured by Kampala University Electoral Commission
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

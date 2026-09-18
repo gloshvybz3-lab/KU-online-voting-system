@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Voter Help & FAQ - Kampala University{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2">STUDENT SUPPORT & GUIDANCE</span>
+        <h2 class="fw-bold text-dark mb-2">Frequently Asked Questions & Electoral Rules</h2>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Clear explanations on voter registration, ballot secrecy, eligibility criteria, and voting procedures for Kampala University elections.
+        </p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="accordion card card-ku border-0 shadow-sm" id="faqAccordion">
+                {% for f in faqs %}
+                    <div class="accordion-item border-0 border-bottom">
+                        <h2 class="accordion-header" id="heading{{ f.id }}">
+                            <button class="accordion-button {% if not loop.first %}collapsed{% endif %} fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ f.id }}" aria-expanded="{{ 'true' if loop.first else 'false' }}">
+                                <span class="badge bg-light text-primary border me-2">{{ f.category }}</span>
+                                {{ f.question }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ f.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted small" style="line-height: 1.7; white-space: pre-line;">
+                                {{ f.answer }}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Standard Fallback FAQ Items -->
+                    <div class="accordion-item border-0 border-bottom">
+                        <h2 class="accordion-header" id="h1">
+                            <button class="accordion-button fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#c1">
+                                <span class="badge bg-light text-primary border me-2">Security</span>
+                                How does the system guarantee that my vote is secret and anonymous?
+                            </button>
+                        </h2>
+                        <div id="c1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted small" style="line-height: 1.7;">
+                                Kampala University Online Voting System enforces the architectural principle of <strong>Absolute Ballot Secrecy</strong>.
+                                The system records your participation in <strong>Table A (voter_participation)</strong> to ensure you can only vote once.
+                                Simultaneously, your vote selections are stored in <strong>Table B (votes)</strong> without any reference, foreign key, or correlation back to your Student ID.
+                                Furthermore, ballots are shuffled in batch storage to prevent timing or sequential tracking.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-0 border-bottom">
+                        <h2 class="accordion-header" id="h2">
+                            <button class="accordion-button collapsed fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#c2">
+                                <span class="badge bg-light text-primary border me-2">Eligibility</span>
+                                Why do I only see certain positions on my electronic ballot?
+                            </button>
+                        </h2>
+                        <div id="c2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted small" style="line-height: 1.7;">
+                                The Electoral Commission establishes eligibility rules for contested offices. University-wide positions (such as Guild President) are visible to all students across all campuses. Campus-specific positions (e.g. Luweero Campus Representative) or faculty-specific positions (e.g. Faculty of Computer Science Representative) are dynamically filtered so you only see the positions you are authorized to elect.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-0 border-bottom">
+                        <h2 class="accordion-header" id="h3">
+                            <button class="accordion-button collapsed fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#c3">
+                                <span class="badge bg-light text-primary border me-2">Receipt</span>
+                                What is the Participation Receipt Token?
+                            </button>
+                        </h2>
+                        <div id="c3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted small" style="line-height: 1.7;">
+                                After you submit your ballot, the system produces a unique cryptographic token (e.g., <code>KU-XXXX-XXXX</code>). You can verify this token at any time on the "Verify Receipt" portal to confirm that your vote was officially acknowledged by the Electoral Commission, without compromising ballot secrecy.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header" id="h4">
+                            <button class="accordion-button collapsed fw-bold text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#c4">
+                                <span class="badge bg-light text-primary border me-2">Results</span>
+                                When are election results announced?
+                            </button>
+                        </h2>
+                        <div id="c4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted small" style="line-height: 1.7;">
+                                Real-time vote tabulations are maintained on a secure administrative ledger. Once the voting deadline passes and the Electoral Commission completes its verification procedures, the EC Chairperson formally approves and publishes the official results on the public portal.
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="card card-ku p-4 text-center mt-4 bg-light">
+                <h5 class="fw-bold text-dark">Need additional assistance?</h5>
+                <p class="text-muted small mb-3">If you encounter verification issues or technical questions, contact the Electoral Commission Helpdesk.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="mailto:ec@ku.ac.ug" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-envelope me-1"></i> ec@ku.ac.ug
+                    </a>
+                    <a href="tel:+256414266813" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-telephone me-1"></i> +256 (0) 414 266 813
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

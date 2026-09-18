@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Electoral Commission Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<section class="hero-section text-center">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <img src="{{ url_for('static', filename='images/ku_logo_transparent.png') }}" alt="Kampala University Logo" class="ku-hero-logo mb-3">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3">
+                    <i class="bi bi-shield-lock-fill me-1"></i> OFFICIAL ELECTRONIC VOTING PORTAL
+                </span>
+                <h1 class="display-5 fw-bold mb-3">Kampala University Student Elections</h1>
+                <p class="lead text-white-50 mx-auto mb-4" style="max-width: 780px;">
+                    Exercising student democracy through a secure, transparent, and anonymous electronic ballot. Every vote is strictly confidential, tamper-evident, and verified against official university records.
+                </p>
+
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    {% if current_user.is_authenticated and current_user.is_student %}
+                        <a href="{{ url_for('voting.list_elections') }}" class="btn btn-ku-gold btn-lg">
+                            <i class="bi bi-check2-circle me-2"></i> Go to My Ballot
+                        </a>
+                    {% elif current_user.is_authenticated and current_user.is_admin %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ku-gold btn-lg">
+                            <i class="bi bi-speedometer2 me-2"></i> Open Admin Cockpit
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.student_login') }}" class="btn btn-ku-gold btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Student Login to Vote
+                        </a>
+                        <a href="{{ url_for('auth.student_register') }}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-person-check me-2"></i> Verify Student Account
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('results.list_published_results') }}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-bar-chart me-2"></i> View Results
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Active Elections Section -->
+<div class="container my-5">
+    {% if active_elections %}
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h3 class="fw-bold text-dark mb-0">
+                    <span class="spinner-grow spinner-grow-sm text-success me-2" role="status"></span>
+                    Live Elections &mdash; Polls Open
+                </h3>
+                <p class="text-muted small mb-0">Eligible students may cast their secret electronic ballot right now.</p>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            {% for el in active_elections %}
+                <div class="col-lg-6">
+                    <div class="card card-ku h-100 border-start border-4 border-success">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge badge-active px-3 py-2 rounded-pill">
+                                    <i class="bi bi-broadcast me-1"></i> POLLS OPEN
+                                </span>
+                                <span class="text-muted small fw-semibold">AY {{ el.academic_year }}</span>
+                            </div>
+                            <h4 class="card-title fw-bold text-dark mt-2 mb-2">{{ el.title }}</h4>
+                            <p class="text-muted small mb-3">{{ el.description or 'Official Kampala University Guild & Campus elections.' }}</p>
+
+                            <div class="bg-light p-3 rounded-3 mb-4 d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="text-muted small">Voting Closes In:</div>
+                                    <div class="fw-bold text-danger fs-6" data-countdown="{{ el.end_time.isoformat() }}">
+                                        Calculating...
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-muted small">Deadline:</div>
+                                    <div class="fw-semibold text-dark small">{{ el.end_time.strftime('%d %b %Y, %H:%M UTC') }}</div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('voting.show_ballot', election_id=el.id) }}" class="btn btn-ku-primary flex-grow-1">
+                                    <i class="bi bi-check2-square me-2"></i> Enter Voting Booth
+                                </a>
+                                {% if current_user.is_authenticated and current_user.is_admin %}
+                                    <a href="{{ url_for('results.view_admin_results', election_id=el.id) }}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-speedometer2"></i> Live Tabulation
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info py-4 text-center mb-5 shadow-sm">
+            <i class="bi bi-calendar-check fs-2 text-primary d-block mb-2"></i>
+            <h5 class="fw-bold mb-1">No Polls Currently Open for Voting</h5>
+            <p class="text-muted mb-0">Check the schedule below for upcoming election dates or view certified results from past elections.</p>
+        </div>
+    {% endif %}
+
+    <!-- Core Security & Architectural Pillars -->
+    <div class="row g-4 my-4">
+        <div class="col-12 text-center mb-2">
+            <h3 class="fw-bold text-dark">Electoral Commission Security Guarantees</h3>
+            <p class="text-muted">Built on strict cryptographic principles to safeguard Kampala University student democracy</p>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-ku text-center p-4 h-100">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                    <i class="bi bi-incognito fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Absolute Ballot Secrecy</h5>
+                <p class="small text-muted mb-0">
+                    Voter participation records are isolated in <strong>Table A</strong> while anonymous ballots reside in <strong>Table B</strong> with zero foreign keys or correlation paths.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-ku text-center p-4 h-100">
+                <div class="rounded-circle bg-success bg-opacity-10 text-success mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                    <i class="bi bi-shield-check fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Double-Vote Prevention</h5>
+                <p class="small text-muted mb-0">
+                    Atomic database constraints prevent any student from casting more than one ballot. Once cast, your ballot is immutable.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-ku text-center p-4 h-100">
+                <div class="rounded-circle bg-warning bg-opacity-10 text-warning mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                    <i class="bi bi-funnel fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Strict Eligibility Rules</h5>
+                <p class="small text-muted mb-0">
+                    The rule engine ensures students only vote for positions corresponding to their designated campus, faculty, or course.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-ku text-center p-4 h-100">
+                <div class="rounded-circle bg-info bg-opacity-10 text-info mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                    <i class="bi bi-receipt-cutoff fs-3"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Cryptographic Receipts</h5>
+                <p class="small text-muted mb-0">
+                    Every voter receives a verifiable Participation Receipt Token allowing independent audit without compromising secret choices.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming and Published Elections -->
+    <div class="row g-4 my-4">
+        {% if upcoming_elections %}
+            <div class="col-lg-6">
+                <div class="card card-ku h-100">
+                    <div class="card-header card-header-ku d-flex justify-content-between align-items-center">
+                        <span class="text-dark"><i class="bi bi-calendar-plus text-primary me-2"></i> Upcoming Scheduled Elections</span>
+                        <span class="badge badge-scheduled">{{ upcoming_elections|length }} Scheduled</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for el in upcoming_elections %}
+                                <li class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h6 class="fw-bold mb-1">{{ el.title }}</h6>
+                                        <span class="badge bg-light text-dark">{{ el.academic_year }}</span>
+                                    </div>
+                                    <p class="small text-muted mb-1">{{ el.description or 'Official scheduled election.' }}</p>
+                                    <div class="small text-primary">
+                                        <i class="bi bi-clock me-1"></i> Opens on {{ el.start_time.strftime('%d %b %Y at %H:%M UTC') }}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if recent_published %}
+            <div class="col-lg-6">
+                <div class="card card-ku h-100">
+                    <div class="card-header card-header-ku d-flex justify-content-between align-items-center">
+                        <span class="text-dark"><i class="bi bi-patch-check-fill text-warning me-2"></i> Official Certified Results</span>
+                        <a href="{{ url_for('results.list_published_results') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for el in recent_published %}
+                                <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ el.title }}</h6>
+                                        <div class="small text-muted">Certified: {{ el.results_approved_at.strftime('%d %b %Y') if el.results_approved_at else 'Published' }}</div>
+                                    </div>
+                                    <a href="{{ url_for('results.view_public_results', election_id=el.id) }}" class="btn btn-sm btn-ku-primary">
+                                        <i class="bi bi-bar-chart-line me-1"></i> Tally & Charts
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

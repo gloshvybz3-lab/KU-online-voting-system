@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}System Audit Trail - Electoral Commission{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Security & Administrative Audit Trail</h2>
+            <p class="text-muted small mb-0">Immutable, cryptographically ordered log of all system and administrative transactions.</p>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card card-ku mb-4 p-3 bg-white">
+        <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="action" class="form-control form-control-sm" placeholder="Filter by Action (e.g. VOTE_CAST, LOGIN, PUBLISH)..." value="{{ action_filter }}">
+            </div>
+            <div class="col-md-4">
+                <select name="user_type" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Actors</option>
+                    <option value="admin" {% if user_type_filter == 'admin' %}selected{% endif %}>Administrators Only</option>
+                    <option value="student" {% if user_type_filter == 'student' %}selected{% endif %}>Students Only</option>
+                    <option value="system" {% if user_type_filter == 'system' %}selected{% endif %}>System Daemons</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-ku-primary w-100">Filter Trail</button>
+                {% if action_filter or user_type_filter %}
+                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="alert alert-light border small text-muted mb-3 d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <span><strong>Ballot Secrecy Guarantee:</strong> This audit trail documents authentication and submission events. To maintain absolute secrecy, no record here or anywhere in the system links a student identity to their candidate choice.</span>
+    </div>
+
+    <!-- Audit Log Table -->
+    <div class="card card-ku">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp (UTC)</th>
+                            <th>Actor Type</th>
+                            <th>Actor Identifier</th>
+                            <th>Action Performed</th>
+                            <th>Details & Context</th>
+                            <th>IP Hash</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td>#{{ log.id }}</td>
+                                <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    <span class="badge {% if log.user_type == 'admin' %}bg-dark{% elif log.user_type == 'student' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        {{ log.user_type|upper }}
+                                    </span>
+                                </td>
+                                <td><code>{{ log.user_identifier }}</code></td>
+                                <td class="fw-bold">{{ log.action }}</td>
+                                <td>{{ log.details or '-' }}</td>
+                                <td><code class="text-muted">{{ log.ip_address or 'Local' }}</code></td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    No audit entries found matching the filter criteria.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

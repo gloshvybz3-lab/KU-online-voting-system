@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Electronic Ballot - {{ election.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Ballot Header & Timer Bar -->
+    <div class="card card-ku mb-4 border-0 bg-white shadow-sm">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <span class="badge bg-success px-3 py-1 mb-2">OFFICIAL ELECTRONIC BALLOT</span>
+                    <h2 class="fw-bold text-dark mb-1">{{ election.title }}</h2>
+                    <p class="text-muted small mb-0">{{ election.description or 'Select one candidate for each contested office below or choose to Abstain.' }}</p>
+                </div>
+                <div class="text-md-end bg-light p-3 rounded-3">
+                    <div class="small text-muted">Voting Closes In:</div>
+                    <div class="fw-bold fs-5 text-danger" data-countdown="{{ election.end_time.isoformat() }}">
+                        Calculating...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between small text-muted">
+                <div>
+                    <i class="bi bi-person-circle text-primary me-1"></i> Voter: <strong>{{ student.full_name }}</strong> ({{ student.student_id }})
+                    <span class="mx-2">&bull;</span>
+                    <i class="bi bi-geo-alt text-danger me-1"></i> Campus: <strong>{{ student.campus }}</strong>
+                </div>
+                <div class="text-success fw-semibold">
+                    <i class="bi bi-shield-check me-1"></i> Strict Ballot Secrecy Active
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ballot Form -->
+    <form id="ballotForm" method="POST" action="{{ url_for('voting.cast_vote', election_id=election.id) }}">
+        {% for pos in positions %}
+            <div class="card card-ku mb-4 position-section" data-position-id="{{ pos.id }}" data-position-title="{{ pos.title }}">
+                <div class="card-header card-header-ku d-flex justify-content-between align-items-center bg-white">
+                    <div>
+                        <span class="badge bg-primary me-2">Office #{{ loop.index }}</span>
+                        <h4 class="d-inline-block fw-bold text-dark mb-0">{{ pos.title }}</h4>
+                    </div>
+                    <span class="text-muted small">Select 1 candidate or Abstain</span>
+                </div>
+                <div class="card-body p-4">
+                    {% if pos.description %}
+                        <p class="text-muted small mb-4">{{ pos.description }}</p>
+                    {% endif %}
+
+                    <div class="row g-3">
+                        {% for cand in pos.approved_candidates %}
+                            <div class="col-md-6 col-lg-4">
+                                <label class="candidate-ballot-card w-100 mb-0">
+                                    <input type="radio" 
+                                           name="position_{{ pos.id }}" 
+                                           value="{{ cand.id }}" 
+                                           data-candidate-name="{{ cand.full_name }}" 
+                                           class="form-check-input visually-hidden">
+                                    
+                                    <div class="text-center">
+                                        {% if cand.photo_url %}
+                                            <img src="{{ cand.photo_url }}" alt="{{ cand.full_name }}" class="candidate-photo">
+                                        {% else %}
+                                            <div class="candidate-photo d-flex align-items-center justify-content-center text-secondary fs-1">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="flex-grow-1">
+                                            <h5 class="fw-bold text-dark mb-1">{{ cand.full_name }}</h5>
+                                            <div class="small text-muted"><i class="bi bi-book me-1"></i>{{ cand.course }}</div>
+                                            <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ cand.campus }}</div>
+                                        </div>
+                                        {% if cand.symbol_url %}
+                                            <img src="{{ cand.symbol_url }}" alt="{{ cand.symbol_name }}" class="candidate-symbol ms-2" title="{{ cand.symbol_name }}">
+                                        {% elif cand.symbol_name %}
+                                            <span class="badge bg-light text-dark border ms-2 small">{{ cand.symbol_name }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if cand.manifesto %}
+                                        <div class="mt-auto pt-2 border-top">
+                                            <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none text-primary" data-bs-toggle="modal" data-bs-target="#manifestoModal{{ cand.id }}">
+                                                <i class="bi bi-file-text me-1"></i> Read Manifesto
+                                            </button>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="mt-3 text-center">
+                                        <span class="btn btn-sm btn-outline-primary select-indicator w-100">
+                                            <i class="bi bi-check2"></i> Select Candidate
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Manifesto Modal -->
+                            {% if cand.manifesto %}
+                                <div class="modal fade" id="manifestoModal{{ cand.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title fw-bold">Candidate Manifesto: {{ cand.full_name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="d-flex align-items-center gap-3 mb-3 p-2 bg-light rounded">
+                                                    {% if cand.photo_url %}
+                                                        <img src="{{ cand.photo_url }}" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ cand.full_name }}</strong> running for <em>{{ pos.title }}</em><br>
+                                                        <small class="text-muted">{{ cand.course }} &bull; {{ cand.campus }}</small>
+                                                    </div>
+                                                </div>
+                                                <div class="p-3 bg-white border rounded" style="white-space: pre-line;">
+                                                    {{ cand.manifesto }}
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Explicit Abstain Option — required here enforces browser-level "must pick one" per group -->
+                        <div class="col-md-6 col-lg-4">
+                            <label class="candidate-ballot-card w-100 mb-0 bg-light border-dashed">
+                                <input type="radio" 
+                                       name="position_{{ pos.id }}" 
+                                       value="abstain" 
+                                       data-candidate-name="Abstain (No Vote)" 
+                                       class="form-check-input visually-hidden"
+                                       required>
+                                <div class="text-center py-4 my-auto">
+                                    <i class="bi bi-dash-circle text-secondary fs-1 d-block mb-2"></i>
+                                    <h5 class="fw-bold text-secondary mb-1">Abstain</h5>
+                                    <p class="small text-muted mb-0">Cast a blank ballot for this specific office.</p>
+                                </div>
+                                <div class="mt-3 text-center">
+                                    <span class="btn btn-sm btn-outline-secondary select-indicator w-100">
+                                        <i class="bi bi-dash"></i> Select Abstain
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Submit Bar -->
+        <div class="card card-ku p-4 bg-white sticky-bottom shadow-lg mb-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Ready to Cast Your Secret Vote?</h5>
+                    <p class="small text-muted mb-0">You will be prompted to review your choices before your ballot is sealed.</p>
+                </div>
+                <button type="submit" class="btn btn-ku-gold btn-lg px-4 py-2 fs-5">
+                    <i class="bi bi-lock-fill me-2"></i> Review & Submit Ballot
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Review Choices Modal -->
+<div class="modal fade" id="reviewChoicesModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-ku-navy text-white" style="background-color: var(--ku-navy);">
+                <h5 class="modal-title fw-bold text-white" id="reviewModalLabel">
+                    <i class="bi bi-shield-check text-warning me-2"></i> Review Your Ballot Selections
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-warning small mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>IMPORTANT:</strong> Cast votes are <strong>immutable</strong> and cannot be altered or undone. Please verify your selections carefully.
+                </div>
+
+                <h6 class="fw-bold text-dark mb-2">Summary of Your Choices:</h6>
+                <div id="reviewChoicesList" class="list-group mb-4">
+                    <!-- Populated by main.js -->
+                </div>
+
+                <div class="p-3 bg-light rounded small text-muted">
+                    <i class="bi bi-incognito text-dark me-1"></i>
+                    <strong>Ballot Secrecy Guarantee:</strong> Your vote choices are transmitted anonymously into Table B with zero relation to your Student ID. You will be provided with a cryptographic participation receipt token upon confirmation.
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-arrow-left me-1"></i> Change Selections
+                </button>
+                <button type="button" id="confirmSubmitVoteBtn" class="btn btn-success fw-bold px-4">
+                    <i class="bi bi-check2-circle me-1"></i> Confirm & Cast Encrypted Vote
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

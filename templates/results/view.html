@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Results: {{ data.election.title }}{% endblock %}
+
+{% block head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Admin Preview & Publishing Gate Banner -->
+    {% if is_admin_preview %}
+        <div class="alert alert-warning border-warning shadow-sm mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill me-2 text-dark"></i> REAL-TIME ADMINISTRATIVE TABULATION MONITOR</h5>
+                    <p class="mb-0 small text-dark">
+                        This view is confidential and accessible only to authorized Electoral Commission officials. These numbers are currently hidden from the student body and public.
+                    </p>
+                </div>
+                <div>
+                    {% if current_user.can_publish_results %}
+                        <form method="POST" action="{{ url_for('results.publish_results', election_id=data.election.id) }}" onsubmit="return confirm('CONFIRM RESULTS RELEASE:\n\nAre you sure you want to officially certify and publish these results to the student body and public portal?\n\nThis action will notify all students and open the certified returns publicly.');">
+                            <button type="submit" class="btn btn-dark fw-bold text-warning text-nowrap">
+                                <i class="bi bi-patch-check-fill me-1"></i> Approve & Publish to Public
+                            </button>
+                        </form>
+                    {% else %}
+                        <span class="badge bg-secondary">Awaiting EC Chair Approval</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card card-ku bg-white border-0 shadow-sm mb-4">
+            <div class="card-body p-4 text-center">
+                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 fs-6 rounded-pill mb-2">
+                    <i class="bi bi-patch-check-fill me-1"></i> OFFICIALLY CERTIFIED RETURNS
+                </span>
+                <h2 class="fw-bold text-dark mb-1">{{ data.election.title }}</h2>
+                <div class="text-muted small">Academic Year {{ data.election.academic_year }} &bull; Released by Kampala University Electoral Commission</div>
+                {% if data.election.results_approved_at %}
+                    <div class="small text-muted mt-1">
+                        <i class="bi bi-clock-history me-1"></i> Certified on {{ data.election.results_approved_at.strftime('%d %b %Y at %H:%M UTC') }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Turnout Statistics Section -->
+    <div class="card card-ku mb-4">
+        <div class="card-header card-header-ku fw-bold text-dark">
+            <i class="bi bi-pie-chart text-primary me-2"></i> Voter Turnout & Participation Analytics
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-4 text-center border-end">
+                    <div class="display-5 fw-bold text-primary mb-1">{{ data.turnout.overall_percentage }}%</div>
+                    <div class="text-muted small fw-semibold">OVERALL VOTER TURNOUT</div>
+                    <div class="mt-2 text-dark small">
+                        <strong>{{ data.turnout.total_voted }}</strong> ballots cast out of <strong>{{ data.turnout.total_registered }}</strong> registered voters
+                    </div>
+                    <div class="progress mt-3" style="height: 10px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ data.turnout.overall_percentage }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Campus Turnout Chart / Table -->
+                <div class="col-md-4">
+                    <h6 class="fw-bold small text-dark mb-2 text-center">Turnout by Campus</h6>
+                    <div style="height: 180px; position: relative;">
+                        <canvas id="campusTurnoutChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Faculty Turnout Chart / Table -->
+                <div class="col-md-4">
+                    <h6 class="fw-bold small text-dark mb-2 text-center">Turnout by Faculty</h6>
+                    <div style="height: 180px; position: relative;">
+                        <canvas id="facultyTurnoutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Position Tallies & Candidate Results -->
+    <h4 class="fw-bold text-dark mb-3">Contested Offices & Final Tallies</h4>
+
+    {% for pos in data.positions %}
+        <div class="card card-ku mb-4">
+            <div class="card-header card-header-ku d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                <div>
+                    <span class="badge bg-primary me-2">Position</span>
+                    <span class="fw-bold text-dark fs-5">{{ pos.title }}</span>
+                </div>
+                <div class="small text-muted">
+                    Total Ballots: <strong>{{ pos.total_votes }}</strong> &bull;
+                    Abstains: <strong>{{ pos.abstain_count }}</strong> ({{ pos.abstain_percentage }}%)
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <!-- Candidate Table -->
+                    <div class="col-lg-7">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light small">
+                                    <tr>
+                                        <th>Candidate</th>
+                                        <th>Symbol</th>
+                                        <th class="text-end">Votes</th>
+                                        <th class="text-end" style="width: 140px;">Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cand in pos.candidates %}
+                                        <tr class="{% if cand.is_winner %}table-success bg-opacity-25{% endif %}">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    {% if cand.photo_url %}
+                                                        <img src="{{ cand.photo_url }}" class="rounded-circle border" width="40" height="40" style="object-fit: cover;">
+                                                    {% else %}
+                                                        <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ cand.full_name }}</strong>
+                                                        {% if cand.is_winner %}
+                                                            <span class="badge bg-warning text-dark ms-1"><i class="bi bi-trophy-fill me-1"></i>Winner</span>
+                                                        {% endif %}
+                                                        <div class="small text-muted">{{ cand.course }} &bull; {{ cand.campus }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if cand.symbol_url %}
+                                                    <img src="{{ cand.symbol_url }}" class="candidate-symbol" title="{{ cand.symbol_name }}">
+                                                {% elif cand.symbol_name %}
+                                                    <span class="badge bg-light text-dark border">{{ cand.symbol_name }}</span>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end fw-bold fs-6">{{ cand.votes }}</td>
+                                            <td class="text-end">
+                                                <div class="fw-bold small">{{ cand.percentage }}%</div>
+                                                <div class="progress mt-1" style="height: 6px;">
+                                                    <div class="progress-bar {% if cand.is_winner %}bg-success{% else %}bg-primary{% endif %}" style="width: {{ cand.percentage }}%;"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+
+                                    {% if pos.abstain_count > 0 %}
+                                        <tr class="text-muted small">
+                                            <td><em>Abstain / Blank Ballots</em></td>
+                                            <td>-</td>
+                                            <td class="text-end">{{ pos.abstain_count }}</td>
+                                            <td class="text-end">{{ pos.abstain_percentage }}%</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Horizontal Bar Chart -->
+                    <div class="col-lg-5">
+                        <div class="p-3 bg-light rounded-3" style="min-height: 250px;">
+                            <h6 class="small fw-bold text-muted text-center mb-2">Vote Distribution Chart</h6>
+                            <div style="height: 200px; position: relative;">
+                                <canvas id="chartPos{{ pos.position_id }}"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Campus Turnout Donut Chart
+    const campusLabels = [{% for c in data.turnout.by_campus %}"{{ c.campus }}"{% if not loop.last %},{% endif %}{% endfor %}];
+    const campusData = [{% for c in data.turnout.by_campus %}{{ c.voted }}{% if not loop.last %},{% endif %}{% endfor %}];
+    renderDonutChart('campusTurnoutChart', campusLabels, campusData);
+
+    // 2. Faculty Turnout Donut Chart
+    const facultyLabels = [{% for f in data.turnout.by_faculty %}"{{ f.faculty.replace('Faculty of ', '') }}"{% if not loop.last %},{% endif %}{% endfor %}];
+    const facultyData = [{% for f in data.turnout.by_faculty %}{{ f.voted }}{% if not loop.last %},{% endif %}{% endfor %}];
+    renderDonutChart('facultyTurnoutChart', facultyLabels, facultyData);
+
+    // 3. Position Bar Charts
+    {% for pos in data.positions %}
+        const labels{{ pos.position_id }} = [{% for cand in pos.candidates %}"{{ cand.full_name }}"{% if not loop.last %},{% endif %}{% endfor %}{% if pos.abstain_count > 0 %},"Abstain"{% endif %}];
+        const data{{ pos.position_id }} = [{% for cand in pos.candidates %}{{ cand.votes }}{% if not loop.last %},{% endif %}{% endfor %}{% if pos.abstain_count > 0 %},{{ pos.abstain_count }}{% endif %}];
+        renderPositionChart('chartPos{{ pos.position_id }}', labels{{ pos.position_id }}, data{{ pos.position_id }});
+    {% endfor %}
+});
+</script>
+{% endblock %}

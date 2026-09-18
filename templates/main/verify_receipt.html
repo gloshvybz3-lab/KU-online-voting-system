@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Participation Receipt - Kampala University{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="text-center mb-4">
+                <span class="badge bg-primary px-3 py-1 mb-2">PUBLIC AUDIT TOOL</span>
+                <h2 class="fw-bold text-dark mb-1">Verify Voting Receipt Token</h2>
+                <p class="text-muted small">
+                    Confirm that your vote was officially acknowledged and stored by the Kampala University Electoral Commission.
+                </p>
+            </div>
+
+            <div class="card card-ku p-4 mb-4">
+                <form method="POST" action="{{ url_for('main.verify_receipt') }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Enter Cryptographic Receipt Token</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-receipt"></i></span>
+                            <input type="text" name="token" class="form-control font-monospace" placeholder="e.g. KU-A1B2C3D4E5F6G7H8" value="{{ token or '' }}" required autofocus>
+                        </div>
+                        <div class="form-text">As displayed on your ballot confirmation screen or confirmation email.</div>
+                    </div>
+                    <button type="submit" class="btn btn-ku-primary w-100 py-2">
+                        <i class="bi bi-shield-check me-1"></i> Verify Participation Record
+                    </button>
+                </form>
+            </div>
+
+            {% if result %}
+                {% if result.valid %}
+                    <div class="card card-ku border-success shadow-sm mb-4">
+                        <div class="card-header bg-success text-white fw-bold d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-patch-check-fill me-2"></i> RECEIPT VERIFIED SUCCESSFULLY</span>
+                            <span class="badge bg-light text-success">AUTHENTIC</span>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="receipt-box">
+                                <div class="row g-3 small">
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block">Receipt Token:</span>
+                                        <code class="fw-bold fs-6 text-primary">{{ result.token }}</code>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block">Status:</span>
+                                        <span class="text-success fw-bold">{{ result.status }}</span>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block">Election Event:</span>
+                                        <strong class="text-dark">{{ result.election_title }} (AY {{ result.academic_year }})</strong>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block">Official Timestamp:</span>
+                                        <span class="text-dark">{{ result.voted_at }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-light border small text-muted mt-3 mb-0">
+                                <i class="bi bi-incognito text-primary me-1"></i>
+                                <strong>Ballot Secrecy Guarantee:</strong>
+                                This verification establishes that a ballot was securely cast under this receipt. Under Kampala University election law, candidate choices remain completely decoupled and anonymous.
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card card-ku border-danger shadow-sm mb-4">
+                        <div class="card-header bg-danger text-white fw-bold">
+                            <i class="bi bi-x-octagon-fill me-2"></i> UNRECOGNIZED RECEIPT TOKEN
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="text-danger mb-2 fw-semibold">{{ result.message }}</p>
+                            <p class="small text-muted mb-0">
+                                Please check for any typing mistakes or ensure you are querying the correct token issued by the Kampala University Electoral Commission.
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <div class="text-center small text-muted">
+                <a href="{{ url_for('main.faq') }}" class="text-decoration-none">
+                    <i class="bi bi-question-circle me-1"></i> Learn more about cryptographic ballot receipts in our FAQ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
