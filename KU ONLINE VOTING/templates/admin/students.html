@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Voter Registry - Electoral Commission{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Student Voter Registry</h2>
+            <p class="text-muted small mb-0">Verified Kampala University students registered for electronic elections.</p>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card card-ku mb-4 p-3 bg-white">
+        <form method="GET" action="{{ url_for('admin.students') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by Student ID, Reg No, Name, or Email..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="campus" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Campuses</option>
+                    {% for c in campuses %}
+                        <option value="{{ c }}" {% if campus_filter == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-ku-primary w-100">Filter</button>
+                {% if search or campus_filter %}
+                    <a href="{{ url_for('admin.students') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Students Table -->
+    <div class="card card-ku">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Full Name & Email</th>
+                            <th>Reg No</th>
+                            <th>Campus & Faculty</th>
+                            <th>Course & Year</th>
+                            <th>Verification</th>
+                            <th>Last Login</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for st in students %}
+                            <tr>
+                                <td><code class="fw-bold text-primary">{{ st.student_id }}</code></td>
+                                <td>
+                                    <strong>{{ st.full_name }}</strong>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ st.email }}</div>
+                                </td>
+                                <td>{{ st.reg_no }}</td>
+                                <td>
+                                    <div><i class="bi bi-geo-alt text-danger me-1"></i>{{ st.campus }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ st.faculty }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ st.course }}</div>
+                                    <span class="badge bg-light text-dark border">Year {{ st.year_of_study }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success">
+                                        <i class="bi bi-patch-check-fill me-1"></i> Verified
+                                    </span>
+                                </td>
+                                <td class="text-muted">
+                                    {{ st.last_login.strftime('%d %b %H:%M') if st.last_login else 'Never' }}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    No registered voters found matching your query.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
