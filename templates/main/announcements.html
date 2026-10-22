@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Electoral Commission Notices & Announcements{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2">OFFICIAL COMMUNIQUES</span>
+        <h2 class="fw-bold text-dark mb-2">Electoral Commission Notices & Announcements</h2>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Official circulars, election schedules, candidate guidelines, and announcements from the Kampala University Electoral Commission.
+        </p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {% for n in notifications %}
+                <div class="card card-ku mb-4 {% if n.is_pinned %}border-start border-4 border-warning{% endif %}">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                {% if n.is_pinned %}
+                                    <span class="badge bg-warning text-dark me-1"><i class="bi bi-pin-angle-fill me-1"></i>PINNED NOTICE</span>
+                                {% endif %}
+                                <span class="badge bg-light text-dark border text-uppercase">{{ n.category.replace('_', ' ') }}</span>
+                            </div>
+                            <span class="text-muted small">
+                                <i class="bi bi-clock me-1"></i> {{ n.created_at.strftime('%d %b %Y, %H:%M UTC') }}
+                            </span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">{{ n.title }}</h4>
+                        <div class="text-muted small mb-0" style="line-height: 1.7; white-space: pre-line;">
+                            {{ n.message }}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-light border py-5 text-center shadow-sm">
+                    <i class="bi bi-bell-slash fs-1 text-muted d-block mb-3"></i>
+                    <h5 class="fw-bold">No Notices Broadcast Yet</h5>
+                    <p class="text-muted small mb-0">Official circulars and election bulletins will be posted here.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
